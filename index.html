@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnKannada.ai - Learn Kannada, Speak Culture</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="kannada-script">ಕನ್ನಡ</span>
+                <span class="logo-text">LearnKannada.ai</span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#lessons" class="nav-link">Lessons</a></li>
+                <li><a href="#quiz" class="nav-link">Quiz</a></li>
+                <li><a href="#progress" class="nav-link">Progress</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li class="nav-user" id="navUser" style="display: none;">
+                    <div class="user-menu">
+                        <span class="user-name" id="userName"></span>
+                        <button class="logout-btn" id="logoutBtn">Logout</button>
+                    </div>
+                </li>
+                <li class="nav-auth" id="navAuth">
+                    <button class="login-btn" id="loginBtn">Login</button>
+                </li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login/Signup Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <span class="close-auth-modal" id="closeAuthModal">&times;</span>
+            
+            <!-- Login Form -->
+            <div class="auth-form" id="loginForm">
+                <h2 class="auth-title">ನಮಸ್ಕಾರ! Welcome Back</h2>
+                <p class="auth-subtitle">Login to continue your Kannada learning journey</p>
+                
+                <form id="loginFormElement">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="your.email@example.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <div class="form-error" id="loginError"></div>
+                    
+                    <button type="submit" class="auth-submit-btn">Login</button>
+                </form>
+                
+                <p class="auth-switch">
+                    Don't have an account? 
+                    <a href="#" class="switch-auth" id="switchToSignup">Sign Up</a>
+                </p>
+            </div>
+            
+            <!-- Signup Form -->
+            <div class="auth-form" id="signupForm" style="display: none;">
+                <h2 class="auth-title">Start Your Journey</h2>
+                <p class="auth-subtitle">Create an account to save your progress</p>
+                
+                <form id="signupFormElement">
+                    <div class="form-group">
+                        <label for="signupName">Full Name</label>
+                        <input type="text" id="signupName" placeholder="Enter your name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" placeholder="your.email@example.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" placeholder="Create a password (min. 6 characters)" required minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="signupConfirmPassword">Confirm Password</label>
+                        <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
+                    </div>
+                    
+                    <div class="form-error" id="signupError"></div>
+                    
+                    <button type="submit" class="auth-submit-btn">Sign Up</button>
+                </form>
+                
+                <p class="auth-switch">
+                    Already have an account? 
+                    <a href="#" class="switch-auth" id="switchToLogin">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Kannada Letters Animation -->
+    <div class="floating-letters" id="floatingLetters"></div>
+
+    <!-- Main App Content (hidden until login) -->
+    <div id="mainApp" style="display: none;">
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="kannada-hero">ಕನ್ನಡ ಕಲಿಯಿರಿ</span>
+                <span class="hero-subtitle">Learn Kannada. Speak with the Heart of Karnataka.</span>
+            </h1>
+            <p class="hero-description">Master the beautiful language of Karnataka through interactive lessons, cultural immersion, and AI-powered learning.</p>
+            
+            <!-- Language Selection -->
+            <div class="language-selector">
+                <label for="baseLanguage">Choose Your Native Language:</label>
+                <select id="baseLanguage" class="language-dropdown">
+                    <option value="">Select Language</option>
+                    <option value="english">English</option>
+                    <option value="hindi">हिंदी (Hindi)</option>
+                    <option value="tamil">தமிழ் (Tamil)</option>
+                    <option value="telugu">తెలుగు (Telugu)</option>
+                    <option value="malayalam">മലയാളം (Malayalam)</option>
+                </select>
+            </div>
+            
+            <div class="selected-language" id="selectedLanguage"></div>
+            
+            <button class="cta-button" id="startLearning">Start Learning</button>
+        </div>
+    </section>
+
+    <!-- Dashboard / Lessons Section -->
+    <section class="lessons-section" id="lessons">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="kannada-accent">ಪಾಠಗಳು</span> Lessons
+            </h2>
+            <p class="section-description">Choose a category to begin your Kannada learning journey</p>
+            
+            <div class="lessons-grid">
+                <!-- Greetings -->
+                <div class="lesson-card" data-category="greetings">
+                    <div class="lesson-icon">👋</div>
+                    <h3 class="lesson-title">Greetings</h3>
+                    <p class="lesson-description">ನಮಸ್ಕಾರ (Namaskara)</p>
+                    <div class="lesson-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="0"></div>
+                        </div>
+                        <span class="progress-text">0% Complete</span>
+                    </div>
+                    <button class="lesson-button">Start Lesson</button>
+                </div>
+
+                <!-- Numbers -->
+                <div class="lesson-card" data-category="numbers">
+                    <div class="lesson-icon">🔢</div>
+                    <h3 class="lesson-title">Numbers</h3>
+                    <p class="lesson-description">ಸಂಖ್ಯೆಗಳು (Sankhyegalu)</p>
+                    <div class="lesson-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="0"></div>
+                        </div>
+                        <span class="progress-text">0% Complete</span>
+                    </div>
+                    <button class="lesson-button">Start Lesson</button>
+                </div>
+
+                <!-- Common Phrases -->
+                <div class="lesson-card" data-category="phrases">
+                    <div class="lesson-icon">💬</div>
+                    <h3 class="lesson-title">Common Phrases</h3>
+                    <p class="lesson-description">ಸಾಮಾನ್ಯ ವಾಕ್ಯಗಳು</p>
+                    <div class="lesson-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="0"></div>
+                        </div>
+                        <span class="progress-text">0% Complete</span>
+                    </div>
+                    <button class="lesson-button">Start Lesson</button>
+                </div>
+
+                <!-- Food -->
+                <div class="lesson-card" data-category="food">
+                    <div class="lesson-icon">🍛</div>
+                    <h3 class="lesson-title">Food & Dining</h3>
+                    <p class="lesson-description">ಆಹಾರ (Ahara)</p>
+                    <div class="lesson-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="0"></div>
+                        </div>
+                        <span class="progress-text">0% Complete</span>
+                    </div>
+                    <button class="lesson-button">Start Lesson</button>
+                </div>
+
+                <!-- Travel -->
+                <div class="lesson-card" data-category="travel">
+                    <div class="lesson-icon">✈️</div>
+                    <h3 class="lesson-title">Travel</h3>
+                    <p class="lesson-description">ಪ್ರಯಾಣ (Prayana)</p>
+                    <div class="lesson-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="0"></div>
+                        </div>
+                        <span class="progress-text">0% Complete</span>
+                    </div>
+                    <button class="lesson-button">Start Lesson</button>
+                </div>
+
+                <!-- Culture -->
+                <div class="lesson-card" data-category="culture">
+                    <div class="lesson-icon">🎭</div>
+                    <h3 class="lesson-title">Culture</h3>
+                    <p class="lesson-description">ಸಂಸ್ಕೃತಿ (Sanskriti)</p>
+                    <div class="lesson-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="0"></div>
+                        </div>
+                        <span class="progress-text">0% Complete</span>
+                    </div>
+                    <button class="lesson-button">Start Lesson</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lesson Modal -->
+    <div class="modal" id="lessonModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            
+            <div class="lesson-viewer" id="lessonViewer">
+                <div class="word-card" id="wordCard">
+                    <div class="word-kannada" id="wordKannada"></div>
+                    <div class="word-pronunciation" id="wordPronunciation"></div>
+                    <div class="word-translation" id="wordTranslation"></div>
+                    
+                    <div class="audio-controls">
+                        <button class="audio-button" id="playAudio">
+                            <span class="audio-icon">🔊</span> Play Pronunciation
+                        </button>
+                        <button class="audio-button record" id="recordAudio">
+                            <span class="audio-icon">🎤</span> Record Your Voice
+                        </button>
+                    </div>
+                    
+                    <div class="navigation-buttons">
+                        <button class="nav-btn" id="prevWord">← Previous</button>
+                        <span class="word-counter" id="wordCounter"></span>
+                        <button class="nav-btn" id="nextWord">Next →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Section -->
+    <section class="quiz-section" id="quiz">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="kannada-accent">ಪರೀಕ್ಷೆ</span> Test Your Knowledge
+            </h2>
+            <p class="section-description">Challenge yourself with interactive quizzes</p>
+            
+            <div class="quiz-selector">
+                <button class="quiz-category-btn" data-quiz="greetings">Greetings Quiz</button>
+                <button class="quiz-category-btn" data-quiz="numbers">Numbers Quiz</button>
+                <button class="quiz-category-btn" data-quiz="phrases">Phrases Quiz</button>
+                <button class="quiz-category-btn" data-quiz="food">Food Quiz</button>
+            </div>
+            
+            <div class="quiz-container" id="quizContainer">
+                <div class="quiz-card" id="quizCard">
+                    <div class="quiz-header">
+                        <span class="quiz-question-number" id="questionNumber"></span>
+                        <span class="quiz-score" id="quizScore">Score: 0</span>
+                    </div>
+                    
+                    <div class="quiz-question" id="quizQuestion"></div>
+                    
+                    <div class="quiz-options" id="quizOptions"></div>
+                    
+                    <div class="quiz-feedback" id="quizFeedback"></div>
+                    
+                    <button class="quiz-next-btn" id="quizNextBtn">Next Question</button>
+                </div>
+                
+                <div class="quiz-results" id="quizResults">
+                    <h3>Quiz Complete!</h3>
+                    <div class="results-score" id="resultsScore"></div>
+                    <div class="results-message" id="resultsMessage"></div>
+                    <button class="quiz-restart-btn" id="quizRestartBtn">Try Again</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Section -->
+    <section class="progress-section" id="progress">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="kannada-accent">ಪ್ರಗತಿ</span> Your Progress
+            </h2>
+            
+            <div class="progress-dashboard">
+                <div class="progress-stat">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-value" id="lessonsCompleted">0</div>
+                    <div class="stat-label">Lessons Completed</div>
+                </div>
+                
+                <div class="progress-stat">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="quizzesCompleted">0</div>
+                    <div class="stat-label">Quizzes Completed</div>
+                </div>
+                
+                <div class="progress-stat">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-value" id="averageScore">0%</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+                
+                <div class="progress-stat">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-value" id="totalWords">0</div>
+                    <div class="stat-label">Words Learned</div>
+                </div>
+            </div>
+            
+            <div class="overall-progress">
+                <h3>Overall Progress</h3>
+                <div class="progress-bar large">
+                    <div class="progress-fill" id="overallProgress" data-progress="0"></div>
+                </div>
+                <p class="progress-percentage" id="overallPercentage">0% Complete</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="kannada-accent">ನಮ್ಮ ಬಗ್ಗೆ</span> About LearnKannada.ai
+            </h2>
+            
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Discover the Beauty of Kannada</h3>
+                    <p>Kannada is one of the oldest Dravidian languages, spoken by over 45 million people primarily in Karnataka, India. With a rich literary tradition spanning over 1,500 years, Kannada is a classical language recognized for its cultural significance.</p>
+                    
+                    <h3>Why Learn Kannada?</h3>
+                    <ul class="about-list">
+                        <li>🏛️ Connect with Karnataka's rich cultural heritage</li>
+                        <li>💼 Enhance career opportunities in Bangalore's tech hub</li>
+                        <li>🎭 Experience Yakshagana, classical music, and art forms</li>
+                        <li>🍛 Discover authentic Karnataka cuisine and traditions</li>
+                        <li>🤝 Build meaningful connections with Kannada-speaking communities</li>
+                    </ul>
+                </div>
+                
+                <div class="cultural-carousel">
+                    <div class="carousel-container">
+                        <div class="carousel-slide active">
+                            <img src="https://images.unsplash.com/photo-1609920658906-8223652d5e5e?w=800&q=80" alt="Mysore Palace">
+                            <p class="carousel-caption">Mysore Palace - ಮೈಸೂರು ಅರಮನೆ</p>
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="https://images.unsplash.com/photo-1620735692151-26a7e0748429?w=800&q=80" alt="Karnataka Culture">
+                            <p class="carousel-caption">Traditional Yakshagana</p>
+                        </div>
+                        <div class="carousel-slide">
+                            <img src="https://images.unsplash.com/photo-1588520616275-8e4e6cc7c4f2?w=800&q=80" alt="Hampi Ruins">
+                            <p class="carousel-caption">Hampi - ಹಂಪೆ</p>
+                        </div>
+                    </div>
+                    <button class="carousel-btn prev" id="carouselPrev">‹</button>
+                    <button class="carousel-btn next" id="carouselNext">›</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="kannada-script">ಕನ್ನಡ</span>
+                    <span class="logo-text">LearnKannada.ai</span>
+                </div>
+                <p class="footer-tagline">Empowering language learners with AI and cultural immersion</p>
+                <p class="footer-copyright">© 2025 LearnKannada.ai - Built with ❤️ for Karnataka</p>
+            </div>
+        </div>
+    </footer>
+    </div>
+    <!-- End Main App Content -->
+
+    <script src="script.js"></script>
+</body>
+</html>
