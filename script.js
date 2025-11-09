@@ -435,7 +435,29 @@ const quizData = {
 // ===========================
 // Authentication Functions
 // ===========================
-function checkAuthStatus() {
+// Check if API is available (use backend if available, fallback to localStorage)
+const USE_BACKEND = true; // Set to false to use localStorage (for offline development)
+
+async function checkAuthStatus() {
+    if (USE_BACKEND && window.LearnKannadaAPI) {
+        // Use backend API
+        try {
+            const response = await window.LearnKannadaAPI.auth.verify();
+            if (response.success && response.user) {
+                currentUser = response.user;
+                showMainApp();
+                initializeApp();
+                createFloatingLetters();
+                await loadProgress();
+                updateProgressDisplay();
+                return;
+            }
+        } catch (error) {
+            console.log('Backend not available, using localStorage fallback');
+        }
+    }
+    
+    // Fallback to localStorage
     const session = getSession();
     if (session && session.user) {
         currentUser = session.user;
@@ -482,6 +504,9 @@ function saveSession(user) {
 
 function clearSession() {
     localStorage.removeItem('kannadaSession');
+    if (window.LearnKannadaAPI) {
+        window.LearnKannadaAPI.auth.logout();
+    }
     currentUser = null;
 }
 
@@ -494,7 +519,22 @@ function saveUsers(users) {
     localStorage.setItem('kannadaUsers', JSON.stringify(users));
 }
 
-function signup(name, email, password) {
+async function signup(name, email, password) {
+    if (USE_BACKEND && window.LearnKannadaAPI) {
+        // Use backend API
+        try {
+            const response = await window.LearnKannadaAPI.auth.signup(name, email, password);
+            if (response.success && response.user) {
+                currentUser = response.user;
+                return response;
+            }
+            return response;
+        } catch (error) {
+            console.error('Backend signup failed, using localStorage fallback');
+        }
+    }
+    
+    // Fallback to localStorage
     const users = getUsers();
     
     // Check if user already exists
@@ -521,7 +561,22 @@ function signup(name, email, password) {
     return { success: true, message: 'Account created successfully!' };
 }
 
-function login(email, password) {
+async function login(email, password) {
+    if (USE_BACKEND && window.LearnKannadaAPI) {
+        // Use backend API
+        try {
+            const response = await window.LearnKannadaAPI.auth.login(email, password);
+            if (response.success && response.user) {
+                currentUser = response.user;
+                return response;
+            }
+            return response;
+        } catch (error) {
+            console.error('Backend login failed, using localStorage fallback');
+        }
+    }
+    
+    // Fallback to localStorage
     const users = getUsers();
     const user = users.find(u => u.email === email && u.password === password);
     
@@ -659,26 +714,45 @@ function setupAuthEventListeners() {
     // Login form submit
     const loginFormElement = document.getElementById('loginFormElement');
     if (loginFormElement) {
-        loginFormElement.addEventListener('submit', function(e) {
+        loginFormElement.addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const loginError = document.getElementById('loginError');
+            const submitBtn = loginFormElement.querySelector('button[type="submit"]');
             
-            const result = login(email, password);
-            if (result.success) {
-                hideAuthModal();
-                showMainApp();
-                initializeApp();
-                createFloatingLetters();
-                loadProgress();
-                updateProgressDisplay();
-                // Clear form
-                document.getElementById('loginEmail').value = '';
-                document.getElementById('loginPassword').value = '';
-            } else {
+            // Disable button during request
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Logging in...';
+            }
+            
+            try {
+                const result = await login(email, password);
+                if (result.success) {
+                    hideAuthModal();
+                    showMainApp();
+                    initializeApp();
+                    createFloatingLetters();
+                    await loadProgress();
+                    updateProgressDisplay();
+                    // Clear form
+                    document.getElementById('loginEmail').value = '';
+                    document.getElementById('loginPassword').value = '';
+                } else {
+                    if (loginError) {
+                        loginError.textContent = result.message;
+                    }
+                }
+            } catch (error) {
                 if (loginError) {
-                    loginError.textContent = result.message;
+                    loginError.textContent = 'Login failed. Please try again.';
+                }
+            } finally {
+                // Re-enable button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Login';
                 }
             }
         });
@@ -687,13 +761,14 @@ function setupAuthEventListeners() {
     // Signup form submit
     const signupFormElement = document.getElementById('signupFormElement');
     if (signupFormElement) {
-        signupFormElement.addEventListener('submit', function(e) {
+        signupFormElement.addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('signupName').value;
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('signupConfirmPassword').value;
             const signupError = document.getElementById('signupError');
+            const submitBtn = signupFormElement.querySelector('button[type="submit"]');
             
             // Validate passwords match
             if (password !== confirmPassword) {
@@ -710,22 +785,40 @@ function setupAuthEventListeners() {
                 return;
             }
             
-            const result = signup(name, email, password);
-            if (result.success) {
-                hideAuthModal();
-                showMainApp();
-                initializeApp();
-                createFloatingLetters();
-                loadProgress();
-                updateProgressDisplay();
-                // Clear form
-                document.getElementById('signupName').value = '';
-                document.getElementById('signupEmail').value = '';
-                document.getElementById('signupPassword').value = '';
-                document.getElementById('signupConfirmPassword').value = '';
-            } else {
+            // Disable button during request
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating account...';
+            }
+            
+            try {
+                const result = await signup(name, email, password);
+                if (result.success) {
+                    hideAuthModal();
+                    showMainApp();
+                    initializeApp();
+                    createFloatingLetters();
+                    await loadProgress();
+                    updateProgressDisplay();
+                    // Clear form
+                    document.getElementById('signupName').value = '';
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                    document.getElementById('signupConfirmPassword').value = '';
+                } else {
+                    if (signupError) {
+                        signupError.textContent = result.message;
+                    }
+                }
+            } catch (error) {
                 if (signupError) {
-                    signupError.textContent = result.message;
+                    signupError.textContent = 'Signup failed. Please try again.';
+                }
+            } finally {
+                // Re-enable button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Sign Up';
                 }
             }
         });
@@ -906,7 +999,7 @@ function showFeedback(message, isCorrect) {
     }
 }
 
-function nextQuestion() {
+async function nextQuestion() {
     if (!currentQuizCategory || !quizData[currentQuizCategory]) {
         console.error('Quiz category not set');
         return;
@@ -918,11 +1011,11 @@ function nextQuestion() {
         currentQuestionIndex++;
         displayQuestion();
     } else {
-        showResults();
+        await showResults();
     }
 }
 
-function showResults() {
+async function showResults() {
     const quizCard = document.getElementById('quizCard');
     if (quizCard) {
         quizCard.style.display = 'none';
@@ -955,7 +1048,7 @@ function showResults() {
     
     // Update progress
     if (currentQuizCategory) {
-        updateQuizProgress(currentQuizCategory, quizScore);
+        await updateQuizProgress(currentQuizCategory, quizScore);
     }
 }
 
@@ -970,13 +1063,42 @@ function restartQuiz() {
 // ===========================
 // Progress Tracking
 // ===========================
-function updateLessonProgress(category) {
-    const progress = getProgress();
+async function updateLessonProgress(category) {
+    // Try backend API first
+    if (USE_BACKEND && window.LearnKannadaAPI) {
+        try {
+            const updatedProgress = await window.LearnKannadaAPI.progress.updateLessonProgress(category);
+            if (updatedProgress) {
+                // Update UI
+                const card = document.querySelector(`[data-category="${category}"]`);
+                if (card) {
+                    const progressFill = card.querySelector('.progress-fill');
+                    const progressText = card.querySelector('.progress-text');
+                    if (progressFill) {
+                        progressFill.style.width = '100%';
+                        progressFill.setAttribute('data-progress', '100');
+                    }
+                    if (progressText) {
+                        progressText.textContent = '100% Complete';
+                    }
+                }
+                updateProgressDisplay();
+                return;
+            }
+        } catch (error) {
+            console.log('Backend update not available, using localStorage fallback');
+        }
+    }
+    
+    // Fallback to localStorage
+    const progress = await getProgress();
     
     if (!progress.lessons.includes(category)) {
         progress.lessons.push(category);
-        progress.wordsLearned += lessonData[category][selectedLanguage].length;
-        saveProgress(progress);
+        if (selectedLanguage && lessonData[category] && lessonData[category][selectedLanguage]) {
+            progress.wordsLearned += lessonData[category][selectedLanguage].length;
+        }
+        await saveProgress(progress);
     }
     
     // Update UI
@@ -996,8 +1118,30 @@ function updateLessonProgress(category) {
     updateProgressDisplay();
 }
 
-function updateQuizProgress(category, score) {
-    const progress = getProgress();
+async function updateQuizProgress(category, score) {
+    // Get current progress to calculate words learned
+    const currentProgress = await getProgress();
+    const wordsLearned = currentProgress.wordsLearned || 0;
+    
+    // Try backend API first
+    if (USE_BACKEND && window.LearnKannadaAPI) {
+        try {
+            const updatedProgress = await window.LearnKannadaAPI.progress.updateQuizProgress(
+                category, 
+                score, 
+                wordsLearned
+            );
+            if (updatedProgress) {
+                updateProgressDisplay();
+                return;
+            }
+        } catch (error) {
+            console.log('Backend update not available, using localStorage fallback');
+        }
+    }
+    
+    // Fallback to localStorage
+    const progress = await getProgress();
     
     progress.quizzes[category] = score;
     progress.quizzesCompleted = Object.keys(progress.quizzes).length;
@@ -1011,11 +1155,11 @@ function updateQuizProgress(category, score) {
         progress.averageScore = 0;
     }
     
-    saveProgress(progress);
+    await saveProgress(progress);
     updateProgressDisplay();
 }
 
-function getProgress() {
+async function getProgress() {
     const defaultProgress = {
         lessons: [],
         quizzes: {},
@@ -1028,22 +1172,51 @@ function getProgress() {
         return defaultProgress;
     }
     
+    // Try backend API first
+    if (USE_BACKEND && window.LearnKannadaAPI) {
+        try {
+            const progress = await window.LearnKannadaAPI.progress.getProgress();
+            if (progress) {
+                return progress;
+            }
+        } catch (error) {
+            console.log('Backend progress not available, using localStorage fallback');
+        }
+    }
+    
+    // Fallback to localStorage
     const userProgressKey = `kannadaProgress_${currentUser.id}`;
     const saved = localStorage.getItem(userProgressKey);
     return saved ? JSON.parse(saved) : defaultProgress;
 }
 
-function saveProgress(progress) {
+async function saveProgress(progress) {
     if (!currentUser) {
         return;
     }
     
+    // Try backend API first
+    if (USE_BACKEND && window.LearnKannadaAPI) {
+        try {
+            // Progress is automatically saved on the backend when updating lessons/quizzes
+            // But we can also explicitly update words learned if needed
+            return;
+        } catch (error) {
+            console.log('Backend save not available, using localStorage fallback');
+        }
+    }
+    
+    // Fallback to localStorage
     const userProgressKey = `kannadaProgress_${currentUser.id}`;
     localStorage.setItem(userProgressKey, JSON.stringify(progress));
 }
 
-function loadProgress() {
-    const progress = getProgress();
+async function loadProgress() {
+    const progress = await getProgress();
+    
+    if (!progress) {
+        return;
+    }
     
     // Update lesson cards with completion status
     const allCategories = ['greetings', 'numbers', 'phrases', 'food', 'travel', 'culture'];
@@ -1076,8 +1249,8 @@ function loadProgress() {
     });
 }
 
-function updateProgressDisplay() {
-    const progress = getProgress();
+async function updateProgressDisplay() {
+    const progress = await getProgress();
     
     const lessonsCompletedEl = document.getElementById('lessonsCompleted');
     const quizzesCompletedEl = document.getElementById('quizzesCompleted');
@@ -1526,7 +1699,7 @@ function openLessonModal(category) {
     displayWord();
 }
 
-function closeLessonModal() {
+async function closeLessonModal() {
     const modal = document.getElementById('lessonModal');
     if (modal) {
         modal.classList.remove('active');
@@ -1534,7 +1707,7 @@ function closeLessonModal() {
     
     // Mark lesson as completed and update progress
     if (currentCategory) {
-        updateLessonProgress(currentCategory);
+        await updateLessonProgress(currentCategory);
     }
 }
 
