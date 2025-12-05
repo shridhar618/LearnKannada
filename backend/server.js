@@ -105,7 +105,7 @@ function authenticateToken(req, res, next) {
 // ===========================
 
 // Signup
-app.post('/api/auth/signup', async (req, res) => {
+app.post('/auth/signup', async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
@@ -175,7 +175,7 @@ app.post('/api/auth/signup', async (req, res) => {
 });
 
 // Login
-app.post('/api/auth/login', async (req, res) => {
+app.post('/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -221,7 +221,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Verify token
-app.get('/api/auth/verify', authenticateToken, async (req, res) => {
+app.get('/auth/verify', authenticateToken, async (req, res) => {
     try {
         const users = await getUsers();
         const user = users.find(u => u.id === req.user.id);
@@ -249,7 +249,7 @@ app.get('/api/auth/verify', authenticateToken, async (req, res) => {
 // ===========================
 
 // Get user progress
-app.get('/api/progress', authenticateToken, async (req, res) => {
+app.get('/progress', authenticateToken, async (req, res) => {
     try {
         const progress = await getProgress();
         const userProgress = progress[req.user.id] || {
@@ -271,7 +271,7 @@ app.get('/api/progress', authenticateToken, async (req, res) => {
 });
 
 // Update lesson progress
-app.post('/api/progress/lesson', authenticateToken, async (req, res) => {
+app.post('/progress/lesson', authenticateToken, async (req, res) => {
     try {
         const { category } = req.body;
 
@@ -313,7 +313,7 @@ app.post('/api/progress/lesson', authenticateToken, async (req, res) => {
 });
 
 // Update quiz progress
-app.post('/api/progress/quiz', authenticateToken, async (req, res) => {
+app.post('/progress/quiz', authenticateToken, async (req, res) => {
     try {
         const { category, score, wordsLearned } = req.body;
 
@@ -365,7 +365,7 @@ app.post('/api/progress/quiz', authenticateToken, async (req, res) => {
 });
 
 // Update words learned
-app.post('/api/progress/words', authenticateToken, async (req, res) => {
+app.post('/progress/words', authenticateToken, async (req, res) => {
     try {
         const { wordsLearned } = req.body;
 
@@ -401,8 +401,17 @@ app.post('/api/progress/words', authenticateToken, async (req, res) => {
 // ===========================
 // Health Check
 // ===========================
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
     res.json({ status: 'ok', message: 'LearnKannada API is running' });
+});
+
+// Basic root handler to avoid "Cannot GET /"
+app.get('/', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'LearnKannada backend is running',
+        endpoints: ['/health', '/auth/signup', '/auth/login', '/auth/verify', '/progress']
+    });
 });
 
 // ===========================
@@ -412,7 +421,7 @@ async function startServer() {
     await initializeData();
     app.listen(PORT, () => {
         console.log(`🚀 LearnKannada backend server running on http://localhost:${PORT}`);
-        console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+        console.log(`📊 Health check: http://localhost:${PORT}/health`);
     });
 }
 
