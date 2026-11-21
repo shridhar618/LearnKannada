@@ -1,5 +1,7 @@
 # LearnKannada Backend API
 
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?logo=express&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-yellow)
+
 Backend server for LearnKannada.ai application with authentication and progress tracking.
 
 ## Features
@@ -211,3 +213,6 @@ For production, consider migrating to:
 - [ ] Implement admin endpoints
 - [ ] Add analytics tracking
 
+## License
+
+MIT, as declared in `package.json`.
